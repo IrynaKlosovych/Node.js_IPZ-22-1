@@ -1,0 +1,24 @@
+{
+  "name": "lab2_weatherapp",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "geoip-lite": "^1.4.10",
+    "geolocation": "^0.2.0",
+    "hbs": "^4.2.0",
+    "node-fetch": "^2.6.0",
+    "node-geocoder": "^4.3.0",
+    "node-geolocation": "^1.15.14",
+    "request-ip": "^3.3.0"
+  },
+  "description": ""
+}
