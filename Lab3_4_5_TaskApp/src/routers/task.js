@@ -6,7 +6,9 @@ const auth = require("../middleware/auth");
 
 router.get('/tasks', auth, async (req, res) => {
     try {
-        const tasks = await Task.find();
+        const tasks = await Task.find({ owner: {
+            _id: req.user._id
+        }});
         res.send(tasks);
     } catch (error) {
         res.status(500).send(error);
@@ -16,6 +18,17 @@ router.get('/tasks', auth, async (req, res) => {
 router.get('/tasks/:id', auth, async (req, res) => {
     try {
         const task = await Task.findById(req.params.id)
+        if (!task) {
+            throw new Error("Not existing")
+        }
+        const belongs = task.owner._id.toString() === req.user._id.toString()
+        if (!belongs) {
+            return res.status(404).send({
+                error: "IdError",
+                message: "This task is not yours"
+            })
+        }
+        await task.populate('owner')
         res.status(200).send(task)
     }
     catch (error) {
@@ -23,23 +36,33 @@ router.get('/tasks/:id', auth, async (req, res) => {
     }
 });
 
+
 router.post('/tasks', auth, async (req, res) => {
     try {
-        const task = new Task(req.body);
+        const task = new Task({...req.body, owner: {
+            _id: req.user._id
+        }});
         await task.save();
-        res.status(200).send(task);
+        res.status(201).send(task);
     } catch (error) {
-        res.status(400).send(error);
+        res.status(500).send(error);
     }
 });
 
 router.delete('/tasks/:id', auth, async (req, res) => {
     const taskId = req.params.id;
     try {
-        const task = await Task.findByIdAndDelete(taskId);
+        const task = await Task.findById(taskId);
+        if (task.owner._id.toString() !== req.user._id.toString()) {
+            return res.status(404).send({
+                error: "IdError",
+                message: "This task is not yours"
+            });
+        }
         if (!task) {
             return res.status(404).send("Task not found");
         }
+        await Task.deleteOne(task)
         res.status(200).send(task);
     } catch (error) {
         console.error("Error deleting task:", error);
@@ -49,7 +72,9 @@ router.delete('/tasks/:id', auth, async (req, res) => {
 
 router.delete('/tasks', auth, async (req, res) => {
     try {
-        await Task.deleteMany({});
+        await Task.deleteMany({owner: {
+            _id: req.user._id
+        }});
         res.status(200).send("All tasks deleted successfully");
     } catch (error) {
         console.error("Error deleting tasks:", error);
@@ -58,14 +83,21 @@ router.delete('/tasks', auth, async (req, res) => {
 });
 
 router.patch('/tasks/:id', auth, async (req, res, next) => {
+    const taskId = req.params.id;
     try {
-        const { id } = req.params
-        const updateData = req.body
-        const task = await Task.findByIdAndUpdate(id, updateData)
-        if (!task) {
-            console.log('Error of updating. Maybe task is not exist')
+        const task = await Task.findById(taskId);
+        if (task.owner._id.toString() !== req.user._id.toString()) {
+            return res.status(404).send({
+                error: "IdError",
+                message: "This task is not yours"
+            });
         }
-        res.send(updateData)
+        if (!task) {
+            return res.status(404).send("Task not found");
+        }
+        const updateData = req.body
+        await Task.updateOne(task, updateData)
+        res.status(200).send(task);
     } catch (e) {
         next(e)
     }

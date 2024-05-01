@@ -50,6 +50,12 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
+}, { toJSON: { virtuals: true }, toObject:{virtuals: true} })
+
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 userSchema.pre('save', async function (next) {
@@ -81,6 +87,13 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 }
 
+userSchema.methods.toJSON = function() {
+    const user = this
+    const userObject = user.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
 
 const User = mongoose.model("User", userSchema)
 module.exports = User

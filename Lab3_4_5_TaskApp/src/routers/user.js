@@ -23,6 +23,7 @@ router.get('/users', auth, async (req, res) => {
 router.get('/users/:id', auth, async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
+        await user.populate('tasks')
         res.status(200).send(user)
     }
     catch (error){
