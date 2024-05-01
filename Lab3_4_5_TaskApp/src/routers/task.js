@@ -2,8 +2,9 @@ const express = require("express");
 const Task = require("../../models/task");
 const { Router } = require('express')
 const router = Router()
+const auth = require("../middleware/auth");
 
-router.get('/tasks', async (req, res) => {
+router.get('/tasks', auth, async (req, res) => {
     try {
         const tasks = await Task.find();
         res.send(tasks);
@@ -12,7 +13,7 @@ router.get('/tasks', async (req, res) => {
     }
 });
 
-router.get('/tasks/:id', async (req, res) => {
+router.get('/tasks/:id', auth, async (req, res) => {
     try {
         const task = await Task.findById(req.params.id)
         res.status(200).send(task)
@@ -22,7 +23,7 @@ router.get('/tasks/:id', async (req, res) => {
     }
 });
 
-router.post('/tasks', async (req, res) => {
+router.post('/tasks', auth, async (req, res) => {
     try {
         const task = new Task(req.body);
         await task.save();
@@ -32,7 +33,7 @@ router.post('/tasks', async (req, res) => {
     }
 });
 
-router.delete('/tasks/:id', async (req, res) => {
+router.delete('/tasks/:id', auth, async (req, res) => {
     const taskId = req.params.id;
     try {
         const task = await Task.findByIdAndDelete(taskId);
@@ -46,7 +47,7 @@ router.delete('/tasks/:id', async (req, res) => {
     }
 });
 
-router.delete('/tasks', async (req, res) => {
+router.delete('/tasks', auth, async (req, res) => {
     try {
         await Task.deleteMany({});
         res.status(200).send("All tasks deleted successfully");
@@ -56,7 +57,7 @@ router.delete('/tasks', async (req, res) => {
     }
 });
 
-router.patch('/tasks/:id', async (req, res, next) => {
+router.patch('/tasks/:id', auth, async (req, res, next) => {
     try {
         const { id } = req.params
         const updateData = req.body
