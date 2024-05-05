@@ -25,14 +25,14 @@ router.get('/tasks/:id', auth, async (req, res) => {
         if (!belongs) {
             return res.status(404).send({
                 error: "IdError",
-                message: "This task is not yours"
+                message: "Not Found"
             })
         }
         await task.populate('owner')
         res.status(200).send(task)
     }
     catch (error) {
-        res.status(500).send(error)
+        res.status(403).send(error)
     }
 });
 
@@ -43,7 +43,7 @@ router.post('/tasks', auth, async (req, res) => {
             _id: req.user._id
         }});
         await task.save();
-        res.status(201).send(task);
+        res.status(200).send(task);
     } catch (error) {
         res.status(500).send(error);
     }

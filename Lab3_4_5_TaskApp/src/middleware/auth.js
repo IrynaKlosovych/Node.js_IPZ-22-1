@@ -15,8 +15,8 @@ const auth = async(req, res, next) => {
         req.user = user;
         req.token = token;
         next();
-    }catch(e){
-        res.status(401).send({error: "Please authenticate"});
+    }catch(error){
+        res.status(403).send("Forbidden Access");
     }
 }
 
